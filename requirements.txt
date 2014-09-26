@@ -1,0 +1,4 @@
+BeautifulSoup==3.2.1
+python-dateutil==2.2
+requests==2.4.1
+sh==1.09
