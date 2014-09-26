@@ -39,7 +39,7 @@ portage_timestamp_tar = timestamp_from_tars(PROJECT_DIR,
                                             regex=PORTAGE_TAR_REGEX,
                                             template= PORTAGE_TAR_TEMPLATE)
 
-# fetch portage lists
+# fetch portage list
 
 latest_timestamp, portage_timestamp_tar = validate_current_tarball(
         PROJECT_DIR, portage_timestamp_tar,

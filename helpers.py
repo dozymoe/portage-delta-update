@@ -40,11 +40,11 @@ def timestamp_from_tars(path, regex, template):
             continue
         time_l = int(match.group("time"))
 
-        # auto remove older tar balls
-        if time_l < time:
-            os.unlink(os.path.join(path, template % time_l))
-        # accept newer tar balls
-        elif time_l > time:
+        if time_l > time:
+            # auto remove older tar balls
+            if time > 0:
+                os.unlink(os.path.join(path, template % time))
+            # accept newer tar balls
             time = time_l
     return time
 
@@ -147,10 +147,15 @@ def apply_patch(path, time_f, time_t, url, temp_dir, regex, template,
     # do patch
     from_file = os.path.join(path, tar_template % time_f)
     to_file = os.path.join(temp_dir, tar_template % time_f)
-    if not sh.patcher(from_file, filepath, to_file):
+    # ToDo: this would raise exception >.>
+    if sh.patcher(from_file, filepath, to_file).exit_code == 0:
+        # successfully patched, replace our old tarball
         sh.rm(from_file)
         os.rename(to_file, os.path.join(path, tar_template % time_t))
         return time_t
+
+    # returning the from-time will freeze the tarball to the latest working
+    # patch, and stop iterating patches in `start_patching()`
     return time_f
 
 def extract_rsync_tarball(path, time, target_dir, temp_dir, template,
