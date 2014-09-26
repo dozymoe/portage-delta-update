@@ -93,12 +93,12 @@ def validate_current_tarball(path, time, url, temp_dir, regex, template):
     response = http_get(url + filename + ".md5sum").text
     md5sum = response[:response.index(" ")]
 
-    if md5sum != file_md5(filename):
+    if md5sum != file_md5(filepath):
         # failed md5 test
         return (0, 0)
     elif download:
         # copy downloaded file from /tmp/ directory to project directory
-        os.rename(filepath, os.path.join(path, filename))
+        sh.mv(filepath, os.path.join(path, filename))
 
     return (latest, new_time)
 
@@ -141,17 +141,17 @@ def apply_patch(path, time_f, time_t, url, temp_dir, regex, template,
     # check md5
     response = http_get(url + filename + ".md5sum").text
     md5sum = response[:response.index(" ")]
-    if md5sum != file_md5(filename):
+    if md5sum != file_md5(filepath):
         return time_f
 
     # do patch
     from_file = os.path.join(path, tar_template % time_f)
-    to_file = os.path.join(temp_dir, tar_template % time_f)
+    to_file = os.path.join(temp_dir, tar_template % time_t)
     # ToDo: this would raise exception >.>
     if sh.patcher(from_file, filepath, to_file).exit_code == 0:
         # successfully patched, replace our old tarball
+        sh.mv(to_file, os.path.join(path, tar_template % time_t))
         sh.rm(from_file)
-        os.rename(to_file, os.path.join(path, tar_template % time_t))
         return time_t
 
     # returning the from-time will freeze the tarball to the latest working

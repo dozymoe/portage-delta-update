@@ -34,6 +34,8 @@ PORTAGE_DELTA_TEMPLATE = "snapshot-%i-%i.patch.bz2"
 
 # vars
 
+import pudb; pudb.set_trace()
+
 portage_timestamp_current = timestamp_from_usr_portage(TARGET_DIR)
 portage_timestamp_tar = timestamp_from_tars(PROJECT_DIR, 
                                             regex=PORTAGE_TAR_REGEX,
