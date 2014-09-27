@@ -102,7 +102,15 @@ def validate_current_tarball(path, time, url, temp_dir, regex, template):
 
     return (latest, new_time)
 
-def start_patching(path, time, url, temp_dir, regex, template, tar_template):
+def perform_before_patch(path, time, temp_dir, template):
+    filename = template % time
+    unc_filename, ext = os.path.splitext(filename)
+    file_from = os.path.join(path, filename)
+    file_to   = os.path.join(temp_dir, unc_filename)
+    print("Copying {} to working directory".format(file_from))
+    return sh.bunzip2(sh.cat(file_from), "-p", _out=file_to).exit_code == 0
+
+def start_patching(temp_dir, time, url, regex, template, tar_template):
     # applying patches and renaming our portage file
     patches = set()
     response = http_get(url)
@@ -123,17 +131,17 @@ def start_patching(path, time, url, temp_dir, regex, template, tar_template):
             sys.stderr.write("Patch for %i is not compatible "
                              "with our %i\n" % (time_f, time))
             continue
-        time = apply_patch(path, time_f, time_t, url, temp_dir, regex,
+        time = apply_patch(temp_dir, time_f, time_t, url, regex,
                            template, tar_template)
     return time
 
-def apply_patch(path, time_f, time_t, url, temp_dir, regex, template,
-                tar_template):
+def apply_patch(temp_dir, time_f, time_t, url, regex, template, tar_template):
     # download compressed patch
     filename = template % (time_f, time_t)
     filepath = os.path.join(temp_dir, filename)
     response = http_get(os.path.join(url, filename), stream=True)
 
+    print("Applying patch " + filename)
     with open(filepath, "wb") as f:
         for chunk in response.iter_content(65536):
             f.write(chunk)
@@ -145,12 +153,14 @@ def apply_patch(path, time_f, time_t, url, temp_dir, regex, template,
         return time_f
 
     # do patch
-    from_file = os.path.join(path, tar_template % time_f)
-    to_file = os.path.join(temp_dir, tar_template % time_t)
+    from_file = os.path.join(temp_dir, tar_template % time_f)
+    to_file   = os.path.join(temp_dir, tar_template % time_t)
+    # remove the .bz2 extension
+    from_file, ext = os.path.splitext(from_file)
+    to_file  , ext = os.path.splitext(to_file)
     # ToDo: this would raise exception >.>
     if sh.patcher(from_file, filepath, to_file).exit_code == 0:
         # successfully patched, replace our old tarball
-        sh.mv(to_file, os.path.join(path, tar_template % time_t))
         sh.rm(from_file)
         return time_t
 
@@ -158,12 +168,25 @@ def apply_patch(path, time_f, time_t, url, temp_dir, regex, template,
     # patch, and stop iterating patches in `start_patching()`
     return time_f
 
+def perform_after_patch(path, time, temp_dir, template):
+    filename = template % time
+    unc_filename, ext = os.path.splitext(filename)
+    file_from   = os.path.join(temp_dir, unc_filename)
+    file_to = os.path.join(path, filename)
+    if os.path.exists(file_to):
+        os.remove(file_to)
+    print("Storing " + file_to)
+    if (sh.bzip2(sh.cat(file_from), "-p", _out=file_to).exit_code == 0):
+        os.remove(file_from)
+        return True
+    return False
+
 def extract_rsync_tarball(path, time, target_dir, temp_dir, template,
                           rsync_exempt):
     build_dir = os.path.join(temp_dir, "portage_update_build")
     force_directories(build_dir, purge=True)
 
-    sh.tar("-xp", file=os.path.join(path, template % time),
+    sh.tar("-xvp", file=os.path.join(path, template % time),
            directory=build_dir)
 
     exempteds = ('--exclude="%s"' % x for x in rsync_exempt)
