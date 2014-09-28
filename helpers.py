@@ -40,7 +40,10 @@ def timestamp_from_tars(path, regex, template):
             continue
         time_l = int(match.group("time"))
 
-        if time_l > time:
+        if time_l < time:
+            # auto remove older tar balls
+            os.unlink(os.path.join(path, template % time_l))
+        elif time_l > time:
             # auto remove older tar balls
             if time > 0:
                 os.unlink(os.path.join(path, template % time))
@@ -108,7 +111,8 @@ def perform_before_patch(path, time, temp_dir, template):
     file_from = os.path.join(path, filename)
     file_to   = os.path.join(temp_dir, unc_filename)
     print("Copying {} to working directory".format(file_from))
-    return sh.bunzip2(sh.cat(file_from), "-p", _out=file_to).exit_code == 0
+    ret = sh.bunzip2(sh.cat(file_from), _out=file_to).exit_code
+    return ret == 0
 
 def start_patching(temp_dir, time, url, regex, template, tar_template):
     # applying patches and renaming our portage file
@@ -160,8 +164,8 @@ def apply_patch(temp_dir, time_f, time_t, url, regex, template, tar_template):
     to_file  , ext = os.path.splitext(to_file)
     # ToDo: this would raise exception >.>
     if sh.patcher(from_file, filepath, to_file).exit_code == 0:
-        # successfully patched, replace our old tarball
-        sh.rm(from_file)
+        # successfully patched, keep new, delete old tarball
+        os.remove(from_file)
         return time_t
 
     # returning the from-time will freeze the tarball to the latest working
@@ -171,15 +175,16 @@ def apply_patch(temp_dir, time_f, time_t, url, regex, template, tar_template):
 def perform_after_patch(path, time, temp_dir, template):
     filename = template % time
     unc_filename, ext = os.path.splitext(filename)
-    file_from   = os.path.join(temp_dir, unc_filename)
+    unc_file_from = os.path.join(temp_dir, unc_filename)
+    file_from = os.path.join(temp_dir, filename)
     file_to = os.path.join(path, filename)
     if os.path.exists(file_to):
         os.remove(file_to)
     print("Storing " + file_to)
-    if (sh.bzip2(sh.cat(file_from), "-p", _out=file_to).exit_code == 0):
-        os.remove(file_from)
-        return True
-    return False
+    ret = sh.bzip2(unc_file_from).exit_code
+    if ret == 0:
+        ret = sh.mv(file_from, file_to).exit_code
+    return ret == 0
 
 def extract_rsync_tarball(path, time, target_dir, temp_dir, template,
                           rsync_exempt):

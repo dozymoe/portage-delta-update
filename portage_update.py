@@ -34,8 +34,6 @@ PORTAGE_DELTA_TEMPLATE = "snapshot-%i-%i.patch.bz2"
 
 # vars
 
-# import pudb; pudb.set_trace()
-
 portage_timestamp_current = timestamp_from_usr_portage(TARGET_DIR)
 portage_timestamp_tar = timestamp_from_tars(PROJECT_DIR, 
                                             regex=PORTAGE_TAR_REGEX,
@@ -69,14 +67,16 @@ if latest_timestamp > portage_timestamp_tar:
                                 PORTAGE_TAR_TEMPLATE):
         exit(-1)
     portage_timestamp_tar = start_patching(
-            PROJECT_DIR, portage_timestamp_tar, url=PORTAGE_DELTA_URL,
-            temp_dir=TEMPORARY_DIR, tar_template=PORTAGE_TAR_TEMPLATE,
+            TEMPORARY_DIR, portage_timestamp_tar, url=PORTAGE_DELTA_URL,
+            tar_template=PORTAGE_TAR_TEMPLATE,
             regex=PORTAGE_DELTA_REGEX, template=PORTAGE_DELTA_TEMPLATE,
     )
     perform_after_patch(PROJECT_DIR, portage_timestamp_tar, TEMPORARY_DIR,
                         PORTAGE_TAR_TEMPLATE)
 
 # extract tarball to /usr/portage
+
+import pudb; pudb.set_trace()
 
 if portage_timestamp_tar > portage_timestamp_current:
     force_directories(TARGET_DIR)
