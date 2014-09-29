@@ -16,7 +16,7 @@ DEPENDS_ON = [
 
 # exempted from rsync delete of /usr/portage
 
-RSYNC_EXEMPT = ["/distfiles/", "/local/", "/packages/"]
+RSYNC_EXEMPT = ("/distfiles/", "/local/", "/packages/")
 
 # const
 
@@ -75,8 +75,6 @@ if latest_timestamp > portage_timestamp_tar:
                         PORTAGE_TAR_TEMPLATE)
 
 # extract tarball to /usr/portage
-
-import pudb; pudb.set_trace()
 
 if portage_timestamp_tar > portage_timestamp_current:
     force_directories(TARGET_DIR)

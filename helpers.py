@@ -190,10 +190,13 @@ def extract_rsync_tarball(path, time, target_dir, temp_dir, template,
                           rsync_exempt):
     build_dir = os.path.join(temp_dir, "portage_update_build")
     force_directories(build_dir, purge=True)
+    filename = os.path.join(path, template % time)
 
-    sh.tar("-xvp", file=os.path.join(path, template % time),
-           directory=build_dir)
+    print("Extract tarball " + filename)
+    sh.tar("-xvp", file=filename, directory=build_dir)
 
+    print("Rsync to " + target_dir)
     exempteds = ('--exclude="%s"' % x for x in rsync_exempt)
-    sh.rsync(os.path.join(build_dir, ""), os.path.join(target_dir, ""), "-av",
-             "--delete", " ".join(exempteds))
+    sh.rsync(os.path.join(build_dir, "portage", ""), os.path.join(target_dir, ""),
+             "-av", "--delete", " ".join(exempteds))
+    sh.rm("-r", build_dir)
