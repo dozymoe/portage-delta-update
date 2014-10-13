@@ -2,7 +2,7 @@ import os
 import sh
 import sys
 from BeautifulSoup import BeautifulSoup
-from dateutil.parser import parse as parse_datetime
+from datetime import datetime
 from hashlib import md5
 from requests import get as http_get
 
@@ -25,10 +25,12 @@ def force_directories(*args, **kwargs):
             os.makedirs(path)
 
 def timestamp_from_usr_portage(path):
-    filename = os.path.join(path, "metadata", "timestamp")
+    filename = os.path.join(path, "metadata", "timestamp.x")
     if os.path.exists(filename):
         with open(filename, "r") as f:
-            time = parse_datetime(f.readline().strip())
+            time_str = f.readline()
+            time_str = time_str[:time_str.index(' ')]
+            time = datetime.utcfromtimestamp(int(time_str))
             return int(time.strftime("%Y%m%d"))
     return 0
 
