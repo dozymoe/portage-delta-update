@@ -16,7 +16,10 @@ DEPENDS_ON = [
 
 # exempted from rsync delete of /usr/portage
 
-RSYNC_EXEMPT = ("/distfiles/", "/local/", "/packages/")
+RSYNC_EXEMPT = (
+    "/distfiles/", "/local/", "/packages/",
+    "/usr/portage/distfiles/", "/usr/portage/local/", "/usr/portage/packages/",
+)
 
 # const
 
