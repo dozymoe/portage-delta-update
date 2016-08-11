@@ -20,7 +20,10 @@ Then run ./configure.sh and use virtualenv to run the main file.
 
 For example:
 
-    cd .
-    . .virtualenv/bin/activate
-    ./main.py
-    deactivate
+    #!/bin/bash
+    (
+        cd .
+        . .virtualenv/bin/activate
+        ./main.py
+        deactivate
+    )
