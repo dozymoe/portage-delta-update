@@ -1,6 +1,18 @@
+## python
+
+/.virtualenv/
+/python_modules
+
 *.pyc
+__pycache__
+
+
+## vim
 
 *.swp
 *.swo
 
-portage-*.tar.*
+
+# git
+
+*.orig

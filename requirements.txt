@@ -1,3 +1,3 @@
-BeautifulSoup==3.2.1
-requests==2.4.1
-sh==1.09
+beautifulsoup4==4.5.1
+bs4==0.0.1
+requests==2.11.0
