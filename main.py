@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 from re import compile as regex
 from host_helper import *
 from local_helper import *
