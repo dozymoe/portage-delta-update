@@ -32,7 +32,7 @@ def untar_tarball(config, time):
     filepath = os.path.join(config['path']['archives'],
             config['local']['template'] % time)
     target = os.path.dirname(os.path.realpath(config['path']['target']))
-    return os.system('tar -xvpf %s -C %s' % (
+    return os.system('tar -xpf %s -C %s' % (
             filepath, target))
 
 
