@@ -85,7 +85,7 @@ def timestamp_from_downloaded_tars(config):
         elif time_l > time:
             # auto remove older tar balls
             if time > 0:
-                os.remove(os.path.join(path,
+                os.remove(os.path.join(config['path']['archives'],
                         config['local']['template'] % time))
             # accept newer tar balls
             time = time_l
