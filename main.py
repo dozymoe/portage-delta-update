@@ -51,7 +51,7 @@ def start_patching():
     patches = set(get_deltas(CONFIG, time))
 
     # applying patches
-    for time_f, time_t in patches:
+    for time_f, time_t in sorted(patches):
         if time != time_f:
             sys.stderr.write(('Patch for %i is not compatible ' +
                     'with our %i\n') % (time_f, time))
